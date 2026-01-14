@@ -497,8 +497,7 @@
         }
 
         function addMarker() {
-            const memo = prompt('메모를 입력하세요:');
-            if (!memo) return;
+            const memo = (prompt('마커 라벨 입력 (선택):', '') || '').trim();
 
             if (!allMarkers[currentUsername]) {
                 allMarkers[currentUsername] = [];
@@ -506,7 +505,7 @@
 
             const newMarker = {
                 time: audio.currentTime,
-                memo: memo,
+                label: (memo || ""),
                 username: currentUsername,
                 created_at: new Date().toISOString()
             };
@@ -599,7 +598,7 @@
                         infoDiv.className = 'marker-info';
                         infoDiv.innerHTML = 
                             '<span class="marker-time">[' + formatTime(m.time) + ']</span>' +
-                            '<span>' + m.memo + '</span>' +
+                            '<span>' + (m.label || "") + '</span>' +
                             '<span class="marker-owner' + (isMyMarker ? ' me' : '') + '">' + markerOwner + '</span>';
 
                         const actionsDiv = document.createElement('div');
