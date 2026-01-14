@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOEIC LC Player - Login</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+        .users-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .users-title {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .user-tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 5px 10px;
+            border-radius: 15px;
+            margin: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .user-tag:hover {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎧 TOEIC LC Player</h1>
+        <p class="subtitle">이름을 입력하고 시작하세요</p>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">이름</label>
+                <input type="text" id="username" placeholder="예: 홍길동" required autocomplete="off">
+            </div>
+            <button type="submit">시작하기</button>
+            <div class="error" id="error"></div>
+        </form>
+
+        <div class="users-section">
+            <div class="users-title">최근 사용자:</div>
+            <div id="usersList"></div>
+        </div>
+    </div>
+
+    <script>
+        fetch('/users')
+            .then(r => r.json())
+            .then(users => {
+                const usersList = document.getElementById('usersList');
+                if (users.length === 0) {
+                    usersList.innerHTML = '<div style="color: #999; font-size: 14px;">아직 사용자가 없습니다</div>';
+                } else {
+                    users.forEach(user => {
+                        const tag = document.createElement('span');
+                        tag.className = 'user-tag';
+                        tag.textContent = user;
+                        tag.onclick = () => {
+                            document.getElementById('username').value = user;
+                        };
+                        usersList.appendChild(tag);
+                    });
+                }
+            });
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            
+            if (!username) {
+                showError('이름을 입력해주세요');
+                return;
+            }
+
+            fetch('/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: username})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/player';
+                } else {
+                    showError(data.error || '로그인 실패');
+                }
+            })
+            .catch(err => {
+                showError('로그인 실패: ' + err);
+            });
+        });
+
+        function showError(msg) {
+            const error = document.getElementById('error');
+            error.textContent = msg;
+            error.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
